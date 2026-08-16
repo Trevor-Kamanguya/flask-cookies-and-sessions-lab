@@ -27,7 +27,23 @@ def index_articles():
 
 @app.route('/articles/<int:id>')
 def show_article(id):
-    pass
+    # Step 1: Initialize the session on the very first request
+    if not session.get('page_views'):
+        session['page_views'] = 0
+
+    # Step 2: Increment on every request to this route
+    session['page_views'] += 1
+
+    # Step 3: Respond based on how many views this session has used
+    if session['page_views'] <= 3:
+        article = Article.query.filter(Article.id == id).first()
+        article_json = ArticleSchema().dump(article)
+        return make_response(article_json, 200)
+
+    return make_response(
+        {'message': 'Maximum pageview limit reached'},
+        401
+    )
 
 
 if __name__ == '__main__':
